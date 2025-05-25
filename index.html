@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Belanja Hemat Bekal Sayuran di Jogja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Report Info: Ringkasan Eksekutif -> Goal: Inform -> Presentation: Text -> Interaction: None -> Justification: Overview.
+        - Report Info: Persyaratan Pengguna -> Goal: Inform -> Presentation: HTML List -> Interaction: None -> Justification: Clear display of constraints.
+        - Report Info: Analisis Harga (Tabel 1) -> Goal: Inform/Compare -> Presentation: HTML Table -> Interaction: None -> Justification: Structured data display. Library: HTML.
+        - Report Info: Pilihan Sayuran Strategis -> Goal: Explain/Inform -> Presentation: Text with interactive buttons -> Interaction: Click to reveal benefits for each category (Sayuran Daun, Berbobot, Protein Nabati) -> Justification: Engage user to learn rationale. Library: JS.
+        - Report Info: Daftar Belanja (Tabel 2 Revisi) -> Goal: Inform/Analyze -> Presentation: HTML Table & Pie Chart -> Interaction: Chart visualizes budget breakdown -> Justification: Quick understanding of cost distribution. Library: Chart.js (Canvas).
+        - Report Info: Usulan Menu (Tabel 3) -> Goal: Inform/Plan -> Presentation: HTML Table -> Interaction: None -> Justification: Easy-to-scan meal ideas. Library: HTML.
+        - Report Info: Tips Praktis -> Goal: Instruct -> Presentation: Accordion sections -> Interaction: Click to expand/collapse -> Justification: Organized and digestible tips. Library: JS.
+        - Report Info: Kesimpulan -> Goal: Summarize -> Presentation: Text -> Interaction: None -> Justification: Key takeaways.
+        CONFIRMING NO SVG/Mermaid. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            border-bottom-width: 4px;
+            color: #059669; /* emerald-600 */
+            border-color: #059669; /* emerald-600 */
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .accordion-content {
+            display: none;
+            transition: max-height 0.3s ease-out;
+            overflow: hidden;
+        }
+        .accordion-button.active + .accordion-content {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px; /* Adjusted for pie chart visibility */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+        }
+        @media (min-width: 640px) { /* sm */
+            .chart-container {
+                height: 350px;
+            }
+        }
+        @media (min-width: 768px) { /* md */
+            .chart-container {
+                height: 400px;
+            }
+        }
+        /* Custom scrollbar for better aesthetics if needed, but Tailwind doesn't directly support this for all browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #059669; /* emerald-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #047857; /* emerald-700 */
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <header class="bg-emerald-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center py-4">
+                <h1 class="text-2xl sm:text-3xl font-bold text-center sm:text-left mb-4 sm:mb-0">Panduan Belanja Hemat Bekal Sayuran di Jogja</h1>
+                <nav class="w-full sm:w-auto">
+                    <ul class="flex flex-wrap justify-center sm:justify-start space-x-2 sm:space-x-1 text-sm">
+                        <li><button data-tab="ringkasan" class="tab-button active font-semibold py-2 px-2 sm:px-3 rounded-t-lg hover:bg-emerald-600">Ringkasan</button></li>
+                        <li><button data-tab="kebutuhan" class="tab-button font-semibold py-2 px-2 sm:px-3 rounded-t-lg hover:bg-emerald-600">Kebutuhan</button></li>
+                        <li><button data-tab="bahan" class="tab-button font-semibold py-2 px-2 sm:px-3 rounded-t-lg hover:bg-emerald-600">Bahan</button></li>
+                        <li><button data-tab="rencana" class="tab-button font-semibold py-2 px-2 sm:px-3 rounded-t-lg hover:bg-emerald-600">Rencana</button></li>
+                        <li><button data-tab="tips" class="tab-button font-semibold py-2 px-2 sm:px-3 rounded-t-lg hover:bg-emerald-600">Tips</button></li>
+                        <li><button data-tab="kesimpulan" class="tab-button font-semibold py-2 px-2 sm:px-3 rounded-t-lg hover:bg-emerald-600">Kesimpulan</button></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section id="ringkasan" class="content-section active bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4">I. Ringkasan Eksekutif</h2>
+            <p class="mb-3 leading-relaxed">Laporan ini menyajikan rencana belanja dan menu makan siang berbasis sayuran yang dirancang secara cermat untuk periode 20 hari (5 hari seminggu selama 4 minggu) di Yogyakarta, dengan batasan anggaran ketat sebesar Rp 100.000. Rencana ini secara khusus memprioritaskan rasa kenyang melalui pemilihan sayuran berserat tinggi dan protein nabati pelengkap yang terjangkau, memanfaatkan efisiensi biaya yang ditawarkan oleh pasar tradisional.</p>
+            <p class="leading-relaxed">Analisis yang dilakukan menegaskan bahwa penyediaan makan siang berbasis sayuran yang bergizi dan mengenyangkan dapat dicapai dalam anggaran rata-rata Rp 5.000 per porsi. Hal ini dimungkinkan dengan berfokus pada produk lokal musiman dan praktik belanja yang cerdas. Rencana ini menekankan variasi, efisiensi biaya, dan kemudahan persiapan makanan, menunjukkan bahwa pola makan sehat dengan anggaran terbatas sepenuhnya dapat diwujudkan di Yogyakarta.</p>
+        </section>
+
+        <section id="kebutuhan" class="content-section bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4">II. Kebutuhan Pengguna dan Konteks Pasar di Yogyakarta</h2>
+            <p class="mb-4 leading-relaxed">Bagian ini menguraikan persyaratan pengguna dan menganalisis konteks pasar di Yogyakarta untuk memastikan kelayakan rencana yang diusulkan. Memahami kebutuhan spesifik dan kondisi pasar lokal adalah kunci untuk menyusun rencana belanja yang realistis dan efektif.</p>
+            
+            <h3 class="text-xl font-semibold text-emerald-600 mb-3">Persyaratan Pengguna yang Terperinci</h3>
+            <ul class="list-disc list-inside mb-4 space-y-1 pl-4">
+                <li><strong>Durasi:</strong> 20 porsi makan siang (5 hari/minggu selama 4 minggu).</li>
+                <li><strong>Anggaran:</strong> Total Rp 100.000 (rata-rata Rp 5.000/porsi).</li>
+                <li><strong>Lokasi:</strong> Yogyakarta (fokus harga pasar lokal).</li>
+                <li><strong>Komponen Utama:</strong> "Sayur saja" (nasi sudah tersedia).</li>
+                <li><strong>Tujuan Utama:</strong> "Yang penting kenyang".</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold text-emerald-600 mb-3">Analisis Harga Sayuran & Pentingnya Pasar Tradisional</h3>
+            <p class="mb-3 leading-relaxed">Observasi krusial adalah perbedaan signifikan harga antara pasar daring dan pasar tradisional. Untuk mematuhi anggaran Rp 5.000/porsi, strategi belanja harus berpusat pada pasar tradisional yang menawarkan harga lebih kompetitif. Sebagai contoh, Kentang bisa Rp 15.000/kg di sumber lokal dibandingkan Rp 36.000/kg di platform lain. Ini menggarisbawahi pentingnya belanja langsung di pasar lokal.</p>
+            <p class="mb-4 leading-relaxed">Protein nabati seperti Tahu dan Tempe, meskipun pengguna meminta "sayur saja", sangat praktis dan sesuai budaya untuk mencapai rasa kenyang dengan anggaran terbatas. Keduanya adalah "Sumber Protein Murah Meriah" yang krusial untuk energi berkelanjutan.</p>
+
+            <h3 class="text-xl font-semibold text-emerald-600 mb-3">Tabel 1: Estimasi Harga Sayuran & Protein Nabati di Yogyakarta (Per Unit/Kg)</h3>
+            <div class="overflow-x-auto rounded-lg border border-stone-200">
+                <table class="min-w-full divide-y-2 divide-stone-200 bg-white text-sm">
+                    <thead class="bg-stone-50">
+                        <tr>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-stone-900 text-left">Nama Bahan</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-stone-900 text-left">Satuan</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-stone-900 text-left">Harga Estimasi (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-200">
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kangkung</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Ikat</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">3.500</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Bayam</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Ikat</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">6.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Sawi Hijau</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Ikat</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">8.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Mentimun</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kg</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">5.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Terong</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kg</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">4.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Labu Siam</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Buah</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">4.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kacang Panjang</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">250g</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">5.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kentang</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kg</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">15.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Wortel</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kg</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">10.000</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 font-semibold text-stone-700">Tempe</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Potong Kecil</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">1.500</td></tr>
+                        <tr><td class="whitespace-nowrap px-4 py-2 font-semibold text-stone-700">Tahu</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">Potong Kecil</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">1.500</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="bahan" class="content-section bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4">III. Pemilihan Sayuran Strategis untuk Rasa Kenyang dan Efisiensi Biaya</h2>
+            <p class="mb-4 leading-relaxed">Pemilihan bahan yang tepat adalah kunci untuk memaksimalkan rasa kenyang dengan anggaran terbatas. Fokusnya adalah pada sayuran berserat tinggi, sayuran berbobot, dan protein nabati yang terjangkau.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <button class="interactive-reveal-button w-full text-left p-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-75">
+                        <span class="font-semibold">🌿 Sayuran Daun Berserat Tinggi (Kangkung, Bayam, Sawi)</span> - Klik untuk Info
+                    </button>
+                    <div class="interactive-reveal-content hidden mt-2 p-3 bg-emerald-50 rounded-md border border-emerald-200">
+                        Sumber serat makanan yang sangat baik, penting untuk meningkatkan rasa kenyang dan membantu pencernaan. Volumenya yang besar dengan biaya rendah menjadikannya ideal untuk merasa kenyang tanpa pengeluaran berlebihan.
+                    </div>
+                </div>
+                <div>
+                    <button class="interactive-reveal-button w-full text-left p-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-75">
+                        <span class="font-semibold">🎃 Sayuran Berbobot (Labu Siam)</span> - Klik untuk Info
+                    </button>
+                    <div class="interactive-reveal-content hidden mt-2 p-3 bg-emerald-50 rounded-md border border-emerald-200">
+                        Menawarkan kepadatan kalori dan energi berkelanjutan, berkontribusi efektif terhadap rasa kenyang. Labu Siam sering digunakan dalam hidangan berkuah yang mengenyangkan karena volume dan kandungan cairannya. (Kentang juga baik, namun Labu Siam lebih hemat untuk anggaran ini).
+                    </div>
+                </div>
+                 <div>
+                    <button class="interactive-reveal-button w-full text-left p-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-75">
+                        <span class="font-semibold">🌱 Protein Nabati Esensial (Tahu, Tempe)</span> - Klik untuk Info
+                    </button>
+                    <div class="interactive-reveal-content hidden mt-2 p-3 bg-emerald-50 rounded-md border border-emerald-200">
+                        Sangat diperlukan untuk rencana anggaran ini. Tahu dan tempe adalah "Sumber Protein Murah Meriah" yang memberikan energi tahan lama dan rasa kenyang. Kandungan proteinnya sangat penting untuk rasa kenyang yang berkelanjutan.
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 leading-relaxed">Kombinasi sayuran daun berserat tinggi dengan sayuran yang lebih substansial dan sumber protein (tahu/tempe) memastikan makanan yang seimbang dan memaksimalkan perasaan kenyang. Hidangan berkuah seperti 'sayur bening' atau tumisan sederhana juga efektif.</p>
+        </section>
+
+        <section id="rencana" class="content-section bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4">IV. Rencana Makan Siang Sayuran Optimal Anggaran 20 Hari</h2>
+            <p class="mb-4 leading-relaxed">Berikut adalah rencana belanja terperinci dan usulan menu mingguan yang dirancang untuk memenuhi kebutuhan selama 20 hari dengan anggaran Rp 100.000. Asumsi utama adalah porsi sayur cukup (1/2 ikat atau 150-200g) ditambah 1-2 potong tahu/tempe per makan siang, dan belanja dilakukan mingguan.</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-emerald-600 mb-3">Tabel 2 (Revisi): Daftar Belanja Sayuran 20 Hari & Alokasi Anggaran (Rp 100.000)</h3>
+                    <div class="overflow-x-auto rounded-lg border border-stone-200 mb-6">
+                        <table class="min-w-full divide-y-2 divide-stone-200 bg-white text-sm">
+                            <thead class="bg-stone-50">
+                                <tr>
+                                    <th class="whitespace-nowrap px-4 py-2 font-medium text-stone-900 text-left">Bahan (20 porsi)</th>
+                                    <th class="whitespace-nowrap px-4 py-2 font-medium text-stone-900 text-left">Kuantitas</th>
+                                    <th class="whitespace-nowrap px-4 py-2 font-medium text-stone-900 text-left">Total Biaya (Rp)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-200">
+                                <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kangkung</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">7 ikat</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">24.500</td></tr>
+                                <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Bayam</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">5 ikat</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">30.000</td></tr>
+                                <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Labu Siam</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">3 buah</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">12.000</td></tr>
+                                <tr><td class="whitespace-nowrap px-4 py-2 text-stone-700">Kacang Panjang</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">1 bungkus (250g)</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">5.000</td></tr>
+                                <tr><td class="whitespace-nowrap px-4 py-2 font-semibold text-stone-700">Tempe</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">15 potong kecil</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">22.500</td></tr>
+                                <tr><td class="whitespace-nowrap px-4 py-2 font-semibold text-stone-700">Tahu</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">4 potong kecil</td><td class="whitespace-nowrap px-4 py-2 text-stone-700">6.000</td></tr>
+                                <tr class="bg-stone-50"><td class="whitespace-nowrap px-4 py-2 font-bold text-stone-900">Total Anggaran</td><td class="whitespace-nowrap px-4 py-2 font-bold text-stone-900"></td><td class="whitespace-nowrap px-4 py-2 font-bold text-stone-900">100.000</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-emerald-600 mb-3">Visualisasi Alokasi Anggaran</h3>
+                     <div class="chart-container bg-stone-50 p-4 rounded-lg border border-stone-200">
+                        <canvas id="budgetPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-emerald-600 mt-8 mb-3">Tabel 3: Contoh Menu Makan Siang Sayuran Mingguan (Dapat Diulang 4 Minggu)</h3>
+            <div class="overflow-x-auto rounded-lg border border-stone-200">
+                <table class="min-w-full divide-y-2 divide-stone-200 bg-white text-sm">
+                    <thead class="bg-stone-50">
+                        <tr>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-stone-900 text-left">Hari</th>
+                                                                                                   
